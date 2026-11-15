@@ -1,0 +1,119 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no"><title>池袋3D マークハント</title><style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081323;font-family:system-ui,'Hiragino Kaku Gothic ProN',sans-serif;color:white}canvas{display:block;width:100%;height:100%;touch-action:none}#hud{position:fixed;inset:0;pointer-events:none}#top{position:absolute;top:16px;left:16px;right:16px;display:flex;align-items:flex-start;gap:12px;justify-content:space-between}.pill{background:#09192ddd;border:1px solid #ffffff3b;box-shadow:0 6px 28px #0005;backdrop-filter:blur(14px);padding:11px 15px;border-radius:16px}.kicker{font-size:10px;letter-spacing:.18em;color:#68e8d2;font-weight:800}.big{font-size:22px;font-weight:900}.small{font-size:12px;color:#c5d5e8}.count{font-size:27px;font-weight:900;color:#ffe383}.brand{font-size:14px;font-weight:800}#minimap{position:absolute;right:16px;top:138px;width:140px;height:140px;border-radius:14px;background:#0a1d32dd;border:1px solid #ffffff44;box-shadow:0 8px 28px #0007}#tip{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);font-size:12px;background:#071a2dcc;padding:10px 17px;border-radius:24px;white-space:nowrap;border:1px solid #ffffff2f}#credit{position:absolute;bottom:5px;left:12px;font-size:10px;color:#adc2d9}#toast{position:absolute;top:95px;left:50%;transform:translateX(-50%);font-weight:900;color:#ffe383;text-shadow:0 4px 20px #000;font-size:28px;opacity:0;transition:opacity .2s}.modal{position:fixed;inset:0;background:#071423c9;backdrop-filter:blur(9px);display:grid;place-items:center;padding:20px;z-index:9}.panel{max-width:510px;width:100%;background:linear-gradient(140deg,#123654,#0b172a);border:1px solid #ffffff45;border-radius:28px;padding:30px;box-shadow:0 25px 80px #0008;text-align:center}.panel .emoji{font-size:52px}.panel h1{font-size:32px;margin:8px 0}.panel p{color:#cbd9e8;line-height:1.7}.btn{border:0;border-radius:14px;padding:14px 29px;background:#f9d76c;color:#112238;font-weight:900;font-size:16px;cursor:pointer}.secondary{background:#234961;color:#e8f3fb;margin-top:10px}.row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.tag{background:#ffffff17;padding:8px 12px;border-radius:12px;font-size:12px}#controls{position:absolute;bottom:38px;left:22px;width:138px;height:138px;display:none;pointer-events:auto}#controls button{position:absolute;width:46px;height:46px;background:#102b48d9;color:#fff;border:1px solid #ffffff77;border-radius:15px;font-weight:900;font-size:22px;touch-action:none}#controls .up{left:46px;top:0}#controls .down{left:46px;top:92px}#controls .left{left:0;top:46px}#controls .right{left:92px;top:46px}#camctrl{position:absolute;right:22px;bottom:44px;display:none;gap:8px;pointer-events:auto}#camctrl button{width:48px;height:48px;border:1px solid #ffffff66;border-radius:16px;background:#102b48d9;color:white;font-size:23px}#restart{pointer-events:auto;cursor:pointer;background:#17334ddc;border:1px solid #ffffff33;border-radius:12px;color:#fff;padding:10px 12px}#bar{position:absolute;top:90px;left:16px;width:230px;height:7px;background:#ffffff2c;border-radius:20px;overflow:hidden}#progress{width:0%;height:100%;background:linear-gradient(90deg,#52dfc7,#ffe279)}@media(pointer:coarse){#controls,#camctrl{display:flex}#tip{bottom:8px;font-size:10px}#minimap{width:112px;height:112px;top:230px}#maptools{top:105px!important;max-width:225px!important}#maptools button{font-size:10px}#top{top:10px;left:10px;right:10px}.pill{padding:8px 11px}.big{font-size:17px}#credit{display:none}}@media(max-width:460px){.brand{font-size:11px}.small{font-size:10px}.count{font-size:22px}#tip{display:none}}
+</style></head><body><canvas id="game"></canvas><div id="hud"><div id="top"><div class="pill"><div class="kicker">IKEBUKURO ADVENTURE</div><div class="big">池袋 3D マークハント</div><div class="small">街を歩いて、隠れた10個の星を探そう</div></div><div class="pill" style="text-align:right"><div class="small">発見したマーク</div><div class="count"><span id="found">0</span><span style="font-size:15px;color:#c7d6e7"> / 10</span></div><button id="restart">やり直す ↻</button></div></div><div id="maptools" style="position:absolute;top:135px;left:16px;max-width:310px;pointer-events:auto;background:#0b2438df;border:1px solid #ffffff33;border-radius:13px;padding:10px"><div id="mapStatus" style="font-size:11px;margin-bottom:7px;color:#d4e9fc">街区モデル（仮）で起動中</div><button id="mapLoad" class="small" style="border:0;border-radius:9px;background:#44c9b8;color:#062c3a;font-weight:900;padding:9px;cursor:pointer">実際の池袋地図を読み込む</button><button id="mapImport" class="small" style="border:0;border-radius:9px;background:#b9cbf8;color:#062c3a;font-weight:900;padding:9px;margin-top:4px;cursor:pointer">地図JSONを読み込む</button><input type="file" id="mapFile" accept=".json,application/json" style="display:none"><button id="saveMap" class="small" style="display:none;border:0;border-radius:9px;background:#ffd977;color:#062c3a;font-weight:900;padding:9px;margin-top:4px;cursor:pointer">オフラインHTMLを保存</button></div><div id="bar"><div id="progress"></div></div><canvas id="minimap" width="180" height="180"></canvas><div id="toast">★ マーク発見！</div><div id="tip">WASD / 矢印キーで移動 · Q / E でカメラ回転 · マウスドラッグでも視点変更</div><div id="credit">初期表示は架空の街区。実地図は「実際の池袋地図を読み込む」で取得</div><div id="controls"><button class="up" data-key="ArrowUp">↑</button><button class="down" data-key="ArrowDown">↓</button><button class="left" data-key="ArrowLeft">←</button><button class="right" data-key="ArrowRight">→</button></div><div id="camctrl"><button data-key="KeyQ">↶</button><button data-key="KeyE">↷</button></div></div><div id="start" class="modal"><div class="panel"><div class="emoji">🏙️ ⭐</div><div class="kicker">EXPLORE IKEBUKURO</div><h1>池袋3D<br>マークハント</h1><p>立体的な池袋の街を探検しよう。<br>10個の光る星が、街のどこかに隠れています。<br>全部見つけたらゲームクリア！</p><div class="row"><span class="tag">🚶 自由に歩く</span><span class="tag">⭐ 毎回ランダム</span><span class="tag">🕹️ PC・スマホ対応</span></div><p style="font-size:12px"><span id="mapInfo">起動時は架空の街区です。「実際の池袋地図を読み込む」でOpenStreetMapのデータに切り替えます。</span></p><button class="btn" id="startBtn">ゲームを始める →</button></div></div><div id="done" class="modal" style="display:none"><div class="panel"><div class="emoji">🏆🎉</div><h1>全10個 発見！</h1><p>おめでとう！池袋のマークを全部見つけました。</p><div id="timeResult" class="big"></div><button class="btn" id="again">もう一度遊ぶ ↻</button></div></div><script>
+'use strict';
+// Standalone perspective 3D software renderer: no server, assets, or paid API.
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d',{alpha:false});const mini=document.getElementById('minimap'), mc=mini.getContext('2d');
+let W=innerWidth,H=innerHeight,dpr=1, yaw=.48,player={x:0,z:0}, running=false,found=0,stars=[],timeStart=0,last=0,drag=false,lastX=0,toastUntil=0;
+const keys={};let buildings=[],roads=[],trees=[],lamps=[];let LIMIT=145;let cam={}, realMap=false, roadSegments=[], spawn={x:-8,z:-5}, mapRaw=null;
+function resize(){dpr=Math.min(devicePixelRatio||1,1.8);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+const random=(a,b)=>a+Math.random()*(b-a);function hash(x,z){let h=Math.sin(x*12.9898+z*78.233)*43758.5453;return h-Math.floor(h)}
+// Simplified, hand-built block plan, explicitly not real OSM geometry.
+const xs=[-130,-91,-49,-8,33,76,120],zs=[-130,-88,-45,-5,35,77,121];
+for(let i=0;i<xs.length;i++)roads.push({x:xs[i],axis:'v',wide:i===3?18:12});for(let j=0;j<zs.length;j++)roads.push({z:zs[j],axis:'h',wide:j===3?18:12});
+function onRoad(x,z){if(realMap)return roadSegments.some(r=>pointSegmentDist(x,z,r)<r.wide/2+2);return roads.some(r=>r.axis==='v'?Math.abs(x-r.x)<r.wide/2:Math.abs(z-r.z)<r.wide/2)}
+function collides(x,z){if(Math.abs(x)>LIMIT||Math.abs(z)>LIMIT)return true;if(realMap)return !onRoad(x,z);return buildings.some(b=>x>b.x-b.w/2-1.2&&x<b.x+b.w/2+1.2&&z>b.z-b.d/2-1.2&&z<b.z+b.d/2+1.2)}
+for(let i=0;i<xs.length-1;i++)for(let j=0;j<zs.length-1;j++){
+ let x=(xs[i]+xs[i+1])/2,z=(zs[j]+zs[j+1])/2,w=xs[i+1]-xs[i]-17,d=zs[j+1]-zs[j]-17;
+ if(w<7||d<7)continue;
+ let empty=((i===3&&j===2)||(i===2&&j===3)||(i===1&&j===4));
+ if(empty){for(let k=0;k<5;k++)trees.push({x:x-8+k*4,z:z+5+(k%2)*3});continue}
+ let count= hash(i,j)>.45?2:1;for(let k=0;k<count;k++){let ww=count===2?w/2-2:w,xx=count===2?x+(k===0?-1:1)*(w/4+1):x;let h=12+hash(i*7+k,j)*37;buildings.push({x:xx,z,w:ww,d,h,c:Math.floor(hash(i*33+k,j*21)*5),seed:hash(i*100+k,j*17)})}
+}
+for(let x of xs)for(let z of zs){if(hash(x,z)>.36){trees.push({x:x+10,z:z+10});lamps.push({x:x-8,z:z-8})}}
+const colors=[['#42677f','#2b4c68','#597c93'],['#9a776c','#815e56','#b08f82'],['#6b7890','#4c5b77','#8793a9'],['#8b92a1','#666f7e','#a9afb9'],['#6a897e','#4e6c63','#8da99d']];
+// Set up a true 3D pinhole camera, projected to HTML canvas.
+function basis(){const f={x:Math.sin(yaw)*.92,y:-.39,z:Math.cos(yaw)*.92};let len=Math.hypot(f.x,f.y,f.z);f.x/=len;f.y/=len;f.z/=len;const right={x:f.z,y:0,z:-f.x};let rlen=Math.hypot(right.x,right.z);right.x/=rlen;right.z/=rlen;const up={x:-right.z*f.y,y:rlen*len*.0+Math.hypot(f.x,f.z),z:right.x*f.y};cam={x:player.x-f.x*22,z:player.z-f.z*22,y:4-f.y*22,f,right,up,scale:Math.min(W*.92,H*1.3)} }
+function proj(x,y,z){let dx=x-cam.x,dy=y-cam.y,dz=z-cam.z;let a=dx*cam.right.x+dz*cam.right.z,b=dx*cam.up.x+dy*cam.up.y+dz*cam.up.z,c=dx*cam.f.x+dy*cam.f.y+dz*cam.f.z;if(c<1)return null;return {x:W/2+a/c*cam.scale,y:H*.54-b/c*cam.scale,dep:c}}
+let polys=[];function poly(points,col,stroke=null){
+ const dep=p=>(p[0]-cam.x)*cam.f.x+(p[1]-cam.y)*cam.f.y+(p[2]-cam.z)*cam.f.z;
+ let clipped=[];
+ for(let i=0;i<points.length;i++){
+  const a=points[i], b=points[(i+1)%points.length],da=dep(a),db=dep(b),ina=da>1.1,inb=db>1.1;
+  if(ina)clipped.push(a);
+  if(ina!==inb){let t=(1.1-da)/(db-da);clipped.push(a.map((v,k)=>v+(b[k]-v)*t))}
+ }
+ if(clipped.length<3)return;
+ let ps=clipped.map(p=>proj(...p));if(ps.some(v=>!v))return;
+ polys.push({ps,col,stroke,depth:ps.reduce((s,p)=>s+p.dep,0)/ps.length})
+}
+function quad(x1,z1,x2,z2,y,c){poly([[x1,y,z1],[x2,y,z1],[x2,y,z2],[x1,y,z2]],c)}
+function cube(x,z,w,d,h,colors){let x1=x-w/2,x2=x+w/2,z1=z-d/2,z2=z+d/2;poly([[x1,0,z1],[x2,0,z1],[x2,h,z1],[x1,h,z1]],colors[0]);poly([[x2,0,z1],[x2,0,z2],[x2,h,z2],[x2,h,z1]],colors[1]);poly([[x2,0,z2],[x1,0,z2],[x1,h,z2],[x2,h,z2]],colors[0]);poly([[x1,0,z2],[x1,0,z1],[x1,h,z1],[x1,h,z2]],colors[1]);poly([[x1,h,z1],[x2,h,z1],[x2,h,z2],[x1,h,z2]],colors[2]);}
+function billboard(x,y,z,s,col){let p=proj(x,y,z);if(!p)return;let sz=Math.max(1,s/p.dep*cam.scale);polys.push({depth:p.dep-1,col,kind:'bill',x:p.x,y:p.y,sz})}
+function scene(t){basis();let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#7fc6df');sky.addColorStop(.6,'#c4e1e5');sky.addColorStop(1,'#b5c9b5');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);polys=[];
+ quad(-LIMIT,-LIMIT,LIMIT,LIMIT,-.12,'#9aaf9c');
+ for(let r of roads){if(realMap)break;if(r.axis==='v'){quad(r.x-r.wide/2,-LIMIT,r.x+r.wide/2,LIMIT,-.08,'#455b68');quad(r.x-r.wide/2-.9,-LIMIT,r.x-r.wide/2,LIMIT,-.06,'#bcc7c2');quad(r.x+r.wide/2,-LIMIT,r.x+r.wide/2+.9,LIMIT,-.06,'#bcc7c2');for(let z=-LIMIT+7;z<LIMIT;z+=15)quad(r.x-.16,z,r.x+.16,z+6,-.02,'#d8e5df')}else{quad(-LIMIT,r.z-r.wide/2,LIMIT,r.z+r.wide/2,-.075,'#455b68');quad(-LIMIT,r.z-r.wide/2-.9,LIMIT,r.z-r.wide/2,-.05,'#c2cdc5');quad(-LIMIT,r.z+r.wide/2,LIMIT,r.z+r.wide/2+.9,-.05,'#c2cdc5');for(let x=-LIMIT+7;x<LIMIT;x+=15)quad(x,r.z-.16,x+6,r.z+.16,-.01,'#d8e5df')}}
+ if(realMap){for(let r of roadSegments){if(Math.abs(r.mx-player.x)>190||Math.abs(r.mz-player.z)>190)continue;let nx=-(r.z2-r.z1)/r.len*r.wide/2,nz=(r.x2-r.x1)/r.len*r.wide/2;poly([[r.x1+nx,-.07,r.z1+nz],[r.x2+nx,-.07,r.z2+nz],[r.x2-nx,-.07,r.z2-nz],[r.x1-nx,-.07,r.z1-nz]],r.walk?'#7c8990':'#4c616d');}}
+ for(const b of buildings){if(Math.abs(b.x-player.x)>185||Math.abs(b.z-player.z)>185)continue;cube(b.x,b.z,b.w,b.d,b.h,colors[b.c]);}
+ for(let tr of trees){billboard(tr.x,4,tr.z,5,'#28785c');billboard(tr.x,2,tr.z,3,'#3d9065')}
+ for(let st of stars){if(st.got)continue;billboard(st.x,2.8+Math.sin(t*.003+st.phase)*.4,st.z,1.8,'star')}
+ // protagonist as geometric 3D character, using upright cuboids
+ cube(player.x,player.z,1.55,1.2,2.9,['#f5c659','#d89c33','#ffe28c']);billboard(player.x,4.1,player.z,1.1,'#ffe4bf');
+ polys.sort((a,b)=>b.depth-a.depth);for(const p of polys){if(p.kind==='bill'){let s=p.sz;if(s>900||s<.5)continue;if(p.col==='star'){let g=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,s*2.3);g.addColorStop(0,'#ffe25aaa');g.addColorStop(1,'#ffe25a00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,s*2.3,0,Math.PI*2);ctx.fill();ctx.save();ctx.translate(p.x,p.y);ctx.rotate(t*.001);ctx.fillStyle='#ffe86b';ctx.strokeStyle='#fff8c5';ctx.lineWidth=Math.max(1,s*.14);ctx.beginPath();for(let i=0;i<10;i++){let a=i*Math.PI/5-Math.PI/2,rr=i%2?s*.46:s;let x=Math.cos(a)*rr,y=Math.sin(a)*rr;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}else{ctx.beginPath();ctx.fillStyle=p.col;ctx.arc(p.x,p.y,s,0,Math.PI*2);ctx.fill()}continue}ctx.beginPath();p.ps.forEach((pt,i)=>i?ctx.lineTo(pt.x,pt.y):ctx.moveTo(pt.x,pt.y));ctx.closePath();ctx.fillStyle=p.col;ctx.fill()}
+ // central compass / position strip
+ ctx.textAlign='center';ctx.fillStyle='#ffffffbd';ctx.font='bold 11px system-ui';ctx.fillText('▲ 進行方向',W/2,Math.min(H-24,H*.79));}
+function reset(){stars=[];found=0;player={...spawn};yaw=.55;document.getElementById('found').textContent='0';document.getElementById('progress').style.width='0%';for(let i=0;i<10;i++){let point=null;for(let n=0;n<3000;n++){let r=realMap?roadSegments[Math.floor(random(0,roadSegments.length))]:null;let t=Math.random(),offset=realMap?random(-Math.min(1,r.wide*.1),Math.min(1,r.wide*.1)):0;let x=realMap?r.x1+(r.x2-r.x1)*t-(r.z2-r.z1)/r.len*offset:random(-130,130),z=realMap?r.z1+(r.z2-r.z1)*t+(r.x2-r.x1)/r.len*offset:random(-130,130);if(!onRoad(x,z)||collides(x,z)||Math.hypot(x-player.x,z-player.z)<22||stars.some(s=>Math.hypot(x-s.x,z-s.z)<20))continue;point={x,z,got:false,phase:random(0,7)};break}if(point)stars.push(point)}timeStart=performance.now();running=true;document.getElementById('done').style.display='none';}
+function miniMap(){let w=mini.width,h=mini.height;mc.clearRect(0,0,w,h);mc.fillStyle='#112a3c';mc.fillRect(0,0,w,h);let X=x=>(x+LIMIT)/(2*LIMIT)*w,Z=z=>(z+LIMIT)/(2*LIMIT)*h;if(realMap){for(let r of roadSegments){mc.strokeStyle=r.walk?'#81929c':'#587481';mc.lineWidth=Math.max(.8,r.wide/(2*LIMIT)*w);mc.beginPath();mc.moveTo(X(r.x1),Z(r.z1));mc.lineTo(X(r.x2),Z(r.z2));mc.stroke()}}else for(let r of roads){mc.strokeStyle='#547581';mc.lineWidth=r.wide/(2*LIMIT)*w;mc.beginPath();if(r.axis==='v'){mc.moveTo(X(r.x),0);mc.lineTo(X(r.x),h)}else{mc.moveTo(0,Z(r.z));mc.lineTo(w,Z(r.z))}mc.stroke()}for(let b of buildings){mc.fillStyle='#7b9296';mc.fillRect(X(b.x-b.w/2),Z(b.z-b.d/2),b.w/(2*LIMIT)*w,b.d/(2*LIMIT)*h)}mc.fillStyle='#f9dc70';mc.beginPath();mc.arc(X(player.x),Z(player.z),4,0,Math.PI*2);mc.fill();mc.strokeStyle='#fff';mc.lineWidth=1.5;mc.beginPath();mc.moveTo(X(player.x),Z(player.z));mc.lineTo(X(player.x+Math.sin(yaw)*12),Z(player.z+Math.cos(yaw)*12));mc.stroke();mc.fillStyle='#cbdce8';mc.font='12px system-ui';mc.fillText('N',w-15,16)}
+function tick(t){let dt=Math.min((t-last)/1000||0,.05);last=t;if(running){let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0);let s=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);if(keys.KeyQ)yaw-=dt*1.7;if(keys.KeyE)yaw+=dt*1.7;let speed=(keys.ShiftLeft||keys.ShiftRight?21:14)*dt;let dx=(Math.sin(yaw)*f+Math.cos(yaw)*s)*speed,dz=(Math.cos(yaw)*f-Math.sin(yaw)*s)*speed;if(f&&s){dx*=.707;dz*=.707}if(!collides(player.x+dx,player.z))player.x+=dx;if(!collides(player.x,player.z+dz))player.z+=dz;for(let st of stars){if(!st.got&&Math.hypot(st.x-player.x,st.z-player.z)<3.1){st.got=true;found++;toastUntil=t+1000;document.getElementById('found').textContent=found;document.getElementById('progress').style.width=(found*10)+'%';if(found===10){running=false;document.getElementById('done').style.display='grid';document.getElementById('timeResult').textContent='クリアタイム '+Math.floor((t-timeStart)/1000)+'秒'}}}document.getElementById('toast').style.opacity=t<toastUntil?'1':'0'}scene(t);miniMap();requestAnimationFrame(tick)}
+
+// Real geographic coordinates are loaded only after an explicit user action.
+const OSM_CENTER={lat:35.7295,lon:139.7109};
+const OSM_BBOX='35.7260,139.7065,35.7330,139.7153';
+const OSM_QUERY=`[out:json][timeout:45];(way["highway"](${OSM_BBOX});way["building"](${OSM_BBOX}););out body;>;out skel qt;`;
+const OSM_SERVERS=['https://overpass.kumi.systems/api/interpreter','https://overpass.nchc.org.tw/api/interpreter','https://overpass-api.de/api/interpreter'];
+const geo=(lat,lon)=>({x:(lon-OSM_CENTER.lon)*Math.cos(OSM_CENTER.lat*Math.PI/180)*111320,z:-(lat-OSM_CENTER.lat)*111320});
+function pointSegmentDist(x,z,s){let t=Math.max(0,Math.min(1,((x-s.x1)*s.dx+(z-s.z1)*s.dz)/(s.len*s.len)));return Math.hypot(x-s.x1-t*s.dx,z-s.z1-t*s.dz)}
+function applyMap(data){
+ if(!data||!Array.isArray(data.elements))throw Error('OpenStreetMap形式のJSONではありません');
+ const nodes=new Map(),ways=[];
+ for(const e of data.elements){if(e.type==='node')nodes.set(e.id,geo(e.lat,e.lon));else if(e.type==='way')ways.push(e)}
+ const bs=[],rs=[],walks=[];
+ for(const w of ways){const tags=w.tags||{};if(!w.nodes||w.nodes.length<2)continue;
+  const pts=w.nodes.map(id=>nodes.get(id)).filter(Boolean);if(pts.length<2)continue;
+  if(tags.highway){const h=tags.highway;const excluded=['motorway','motorway_link','trunk','trunk_link','construction','proposed','raceway'];if(excluded.includes(h)||tags.access==='private')continue;
+   const walk=['footway','pedestrian','path','steps','living_street'].includes(h);let width=walk?5:['primary','secondary','tertiary'].includes(h)?11:8;
+   if(h==='steps')width=3;
+   for(let i=0;i<pts.length-1;i++){let a=pts[i],b=pts[i+1],dx=b.x-a.x,dz=b.z-a.z,len=Math.hypot(dx,dz);if(len<.8||len>350)continue;let item={x1:a.x,z1:a.z,x2:b.x,z2:b.z,dx,dz,len,wide:width,walk,mx:(a.x+b.x)/2,mz:(a.z+b.z)/2};rs.push(item);if(walk||!['motorway','trunk'].includes(h))walks.push(item)}
+  }
+  if(tags.building&&tags.building!=='no'&&pts.length>=4){let xx=pts.map(p=>p.x),zz=pts.map(p=>p.z),x1=Math.min(...xx),x2=Math.max(...xx),z1=Math.min(...zz),z2=Math.max(...zz),bw=x2-x1,bd=z2-z1;if(bw<2||bd<2||bw>170||bd>170)continue;
+   let lv=Number(tags['building:levels']);let hh=Number(tags.height);if(!Number.isFinite(hh)||hh<3||hh>200)hh=Number.isFinite(lv)&&lv>0?Math.min(135,lv*3.3):9+Math.abs(Math.sin(w.id*.003))*24;
+   bs.push({x:(x1+x2)/2,z:(z1+z2)/2,w:bw,d:bd,h:hh,c:Math.abs(w.id)%colors.length})
+  }
+ }
+ if(rs.length<20||bs.length<15)throw Error('道路または建物データが不足しています');
+ // Do not allow a huge number of buildings to stall the software 3D renderer.
+ bs.sort((a,b)=>Math.hypot(a.x,a.z)-Math.hypot(b.x,b.z));
+ let stationCandidates=walks.filter(r=>Math.hypot(r.mx,r.mz)<140);if(!stationCandidates.length)stationCandidates=walks;
+ const nearest=stationCandidates.reduce((a,b)=>Math.hypot(a.mx,a.mz)<Math.hypot(b.mx,b.mz)?a:b);
+ // Spawn is located at a segment midpoint, not in a building footprint.
+ let sp={x:nearest.mx,z:nearest.mz};
+ buildings=bs.filter(b=>Math.abs(b.x)<540&&Math.abs(b.z)<540);roadSegments=rs.filter(r=>Math.abs(r.mx)<550&&Math.abs(r.mz)<550);
+ roads=[];trees=[];lamps=[];LIMIT=560;realMap=true;spawn=sp;mapRaw=data;
+ // Remove buildings that overlap the spawn. OSM represents footprints with boxes here.
+ buildings=buildings.filter(b=>Math.abs(b.x-sp.x)>b.w/2+2||Math.abs(b.z-sp.z)>b.d/2+2);
+ const status=document.getElementById('mapStatus');status.textContent=`実地図モード：道路${roadSegments.length}区間・建物${buildings.length}棟（OSM）`;
+ document.getElementById('credit').innerHTML='Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:#c0dfff">OpenStreetMap contributors</a> · ODbL | 建物高さは一部推定';
+ document.getElementById('mapInfo').textContent='実際の池袋の道路と建物の位置情報を簡易3D化しました。建物形状・高さ・通行判定は近似です。';
+ reset();return {roadSegments:roadSegments.length,buildings:buildings.length};
+}
+async function fetchOSM(){const btn=document.getElementById('mapLoad');btn.disabled=true;btn.textContent='地図データ取得中…';let errors=[];
+ try{for(let i=0;i<OSM_SERVERS.length;i++){let base=OSM_SERVERS[i];try{
+   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),16000);
+   let res;try{res=await fetch(base+'?data='+encodeURIComponent(OSM_QUERY),{signal:controller.signal})}finally{clearTimeout(timer)}
+   if(!res.ok)throw Error('HTTP '+res.status);let data=await res.json();applyMap(data);btn.textContent='地図の読み込み完了';document.getElementById('saveMap').style.display='inline-block';return;
+  }catch(err){errors.push(err.message)}}throw Error(errors.join(' / '));
+ }catch(err){document.getElementById('mapStatus').textContent='実地図の取得に失敗しました。架空の街区でプレイできます。';btn.textContent='実地図を再取得';btn.disabled=false;console.warn('OSM fetch unavailable',err)}
+}
+function exportOffline(){if(!mapRaw)return;const encoded=JSON.stringify(mapRaw).replace(/</g,'\\u003c');
+ let startEl=document.getElementById('start'),doneEl=document.getElementById('done');let prevStart=startEl.style.display,prevDone=doneEl.style.display;startEl.style.display='grid';doneEl.style.display='none';let html='<!doctype html>'+document.documentElement.outerHTML;startEl.style.display=prevStart;doneEl.style.display=prevDone;
+ html=html.replace('const EMBEDDED_OSM=null;', 'const EMBEDDED_OSM='+encoded+';');
+ let blob=new Blob([html],{type:'text/html;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ikebukuro_3d_osm_offline.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);
+}
+const EMBEDDED_OSM=null;
+document.getElementById('mapLoad').onclick=fetchOSM;
+document.getElementById('saveMap').onclick=exportOffline;
+document.getElementById('mapImport').onclick=()=>document.getElementById('mapFile').click();
+document.getElementById('mapFile').onchange=async(e)=>{try{let file=e.target.files[0];if(!file)return;let data=JSON.parse(await file.text());applyMap(data);document.getElementById('saveMap').style.display='inline-block';document.getElementById('mapLoad').textContent='地図読み込み完了';}catch(err){document.getElementById('mapStatus').textContent='地図JSONエラー: '+err.message}};
+if(EMBEDDED_OSM){try{applyMap(EMBEDDED_OSM)}catch(e){console.warn(e)}}
+document.getElementById('startBtn').onclick=()=>{document.getElementById('start').style.display='none';reset()};document.getElementById('again').onclick=reset;document.getElementById('restart').onclick=reset;addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();keys[e.code]=true});addEventListener('keyup',e=>keys[e.code]=false);addEventListener('blur',()=>{for(let k in keys)keys[k]=false});for(const btn of document.querySelectorAll('[data-key]')){let k=btn.dataset.key;btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.setPointerCapture(e.pointerId);keys[k]=true});for(const ev of ['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(ev,()=>keys[k]=false)}canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(drag){yaw+=(e.clientX-lastX)*.008;lastX=e.clientX}});canvas.addEventListener('pointerup',()=>drag=false);requestAnimationFrame(tick);
+</script></body></html>
